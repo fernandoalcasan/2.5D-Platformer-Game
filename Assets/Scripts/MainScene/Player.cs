@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    [Header("Physics Properties")]
     [SerializeField]
     private float _speed;
     [SerializeField]
@@ -14,6 +15,9 @@ public class Player : MonoBehaviour
     private bool _canDJ;
 
     private CharacterController _charController;
+    private int _coins;
+
+    public int Coins { get => _coins; }
 
     void Start()
     {
@@ -21,6 +25,8 @@ public class Player : MonoBehaviour
 
         if (_charController is null)
             Debug.LogError("Character controller is NULL");
+
+        Collectable.OnCoinCollected += CoinCollected;
     }
 
     void Update()
@@ -51,5 +57,15 @@ public class Player : MonoBehaviour
         velocity.y = _gravImpulse;
 
         _charController.Move(velocity * Time.deltaTime);
+    }
+
+    private void CoinCollected()
+    {
+        _coins++;
+    }
+
+    private void OnDestroy()
+    {
+        Collectable.OnCoinCollected -= CoinCollected;
     }
 }
