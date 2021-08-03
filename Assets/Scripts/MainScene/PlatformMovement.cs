@@ -19,8 +19,6 @@ public class PlatformMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        float step = _speed * Time.deltaTime;
-
         if(transform.position == _waypoints[_target].position)
         {
             _target++;
@@ -30,12 +28,27 @@ public class PlatformMovement : MonoBehaviour
                 _waypoints.Reverse();
                 _target = 1;
             }
-
+        }
+        else
+        {
+            float step = _speed * Time.deltaTime;
             transform.position = Vector3.MoveTowards(transform.position, _waypoints[_target].position, step);
         }
-        else if(transform.position != _waypoints[_target].position)
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("Player"))
         {
-            transform.position = Vector3.MoveTowards(transform.position, _waypoints[_target].position, step);
+            other.transform.parent = this.transform;            
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            other.transform.parent = null;
         }
     }
 }
