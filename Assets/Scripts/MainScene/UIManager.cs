@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [SerializeField]
-    private Text _coinsTxt;
+    private Text _coinsTxt, _livesTxt;
 
     [SerializeField]
     private Player _playerRef;
@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
         Collectable.OnCoinCollected += AddCoin;
+        DeadZone.OnPlayerFall += UpdateLives;
     }
 
     private void AddCoin()
@@ -21,8 +22,14 @@ public class UIManager : MonoBehaviour
         _coinsTxt.text = "Coins: " + _playerRef.Coins;
     }
 
+    private void UpdateLives()
+    {
+        _livesTxt.text = "Lives: " + _playerRef.Lives;
+    }
+
     private void OnDestroy()
     {
         Collectable.OnCoinCollected -= AddCoin;
+        DeadZone.OnPlayerFall -= UpdateLives;
     }
 }

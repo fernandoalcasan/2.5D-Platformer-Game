@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
@@ -15,9 +16,15 @@ public class Player : MonoBehaviour
     private bool _canDJ;
 
     private CharacterController _charController;
-    private int _coins;
 
+    private int _coins;
     public int Coins { get => _coins; }
+    
+    private int _lives = 3;
+    public int Lives { get => _lives; }
+
+    [SerializeField]
+    private Transform _respawnPoint;
 
     void Start()
     {
@@ -27,10 +34,14 @@ public class Player : MonoBehaviour
             Debug.LogError("Character controller is NULL");
 
         Collectable.OnCoinCollected += CoinCollected;
+        DeadZone.OnPlayerFall += ReceiveDamage;
     }
 
     void Update()
     {
+        if (!_charController.enabled)
+            return;
+
         float horInput = Input.GetAxis("Horizontal");
         Vector3 dir = new Vector3(horInput, 0, 0);
         Vector3 velocity = dir * _speed;
@@ -64,8 +75,27 @@ public class Player : MonoBehaviour
         _coins++;
     }
 
+    private void ReceiveDamage()
+    {
+        _lives--;
+
+        if(_lives < 1)
+            SceneManager.LoadScene(0);
+
+        _charController.enabled = false;
+        transform.position = _respawnPoint.position;
+        StartCoroutine(EnableController());
+    }
+
+    private IEnumerator EnableController()
+    {
+        yield return new WaitForSeconds(0.5f);
+        _charController.enabled = true;
+    }
+
     private void OnDestroy()
     {
         Collectable.OnCoinCollected -= CoinCollected;
+        DeadZone.OnPlayerFall -= ReceiveDamage;
     }
 }
