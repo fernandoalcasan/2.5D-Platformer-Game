@@ -8,12 +8,16 @@ public class Player : MonoBehaviour
     [Header("Physics Properties")]
     [SerializeField]
     private float _speed;
+    private Vector3 _direction;
+    private Vector3 _velocity;
     [SerializeField]
     private float _gravity = 1f;
     [SerializeField]
     private float _jumpHeight;
     private float _gravImpulse;
-    private bool _canDJ;
+    private bool _canDoubleJump;
+    private bool _canWallJump;
+    private Vector3 _wallNormal;
 
     private CharacterController _charController;
 
@@ -43,31 +47,52 @@ public class Player : MonoBehaviour
             return;
 
         float horInput = Input.GetAxis("Horizontal");
-        Vector3 dir = new Vector3(horInput, 0, 0);
-        Vector3 velocity = dir * _speed;
 
         if (_charController.isGrounded)
         {
+            _canWallJump = false;
+            _direction = new Vector3(horInput, 0, 0);
+            _velocity = _direction * _speed;
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 _gravImpulse = _jumpHeight;
-                _canDJ = true;
+                _canDoubleJump = true;
             }
         }
         else
         {
             _gravImpulse -= _gravity;
 
-            if (Input.GetKeyDown(KeyCode.Space) && _canDJ)
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                _gravImpulse += _jumpHeight;
-                _canDJ = false;
-            }
+                if(_canWallJump)
+                {
+                    _gravImpulse = _jumpHeight;
+                    _velocity = _wallNormal * _speed;
+                    _canWallJump = false;
+                    _canDoubleJump = false;
+                }
+                else if(_canDoubleJump)
+                {
+                    _gravImpulse += _jumpHeight;
+                    _canDoubleJump = false;
+                }
+            }            
         }
 
-        velocity.y = _gravImpulse;
+        _velocity.y = _gravImpulse;
 
-        _charController.Move(velocity * Time.deltaTime);
+        _charController.Move(_velocity * Time.deltaTime);
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if(!_charController.isGrounded && hit.collider.CompareTag("Wall"))
+        {
+            _wallNormal = hit.normal;
+            _canWallJump = true;
+        }
     }
 
     private void CoinCollected()
