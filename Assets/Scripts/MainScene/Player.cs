@@ -8,6 +8,10 @@ public class Player : MonoBehaviour
     [Header("Physics Properties")]
     [SerializeField]
     private float _speed;
+
+    [SerializeField]
+    private float _pushPower;
+
     private Vector3 _direction;
     private Vector3 _velocity;
     [SerializeField]
@@ -88,6 +92,17 @@ public class Player : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
+        if(hit.collider.CompareTag("MovableBox"))
+        {
+            Rigidbody box = hit.collider.attachedRigidbody;
+
+            if(!(box is null))
+            {
+                Vector3 moveDir = new Vector3(hit.moveDirection.x, 0, 0);
+                box.velocity = moveDir * _pushPower;
+            }
+        }
+
         if(!_charController.isGrounded && hit.collider.CompareTag("Wall"))
         {
             _wallNormal = hit.normal;
