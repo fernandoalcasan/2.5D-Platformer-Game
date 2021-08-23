@@ -32,18 +32,26 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        CalculateMovement();
+    }
+
+    private void CalculateMovement()
+    {
+        if (!_player.enabled)
+            return;
+
         _direction = Input.GetAxis("Horizontal");
         _movement = new Vector3(_direction * _speed, 0f, 0f);
         _anim.SetFloat("Speed", Mathf.Abs(_direction));
 
-        if(_direction != 0f)
+        if (_direction != 0f)
         {
             _facing = transform.localEulerAngles;
             _facing.y = _direction > 0f ? 0f : 180f;
             transform.localEulerAngles = _facing;
         }
 
-        if(_player.isGrounded)
+        if (_player.isGrounded)
         {
             if (_jumping)
             {
@@ -51,16 +59,16 @@ public class Player : MonoBehaviour
                 _anim.SetBool("Jumping", false);
             }
 
-            if(Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
                 _movement.x *= 2f;
                 _anim.SetBool("Running", true);
                 _running = true;
             }
 
-            if(Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space))
             {
-                if(_running)
+                if (_running)
                     _gravityImpulse = _jumpPower * 1.25f;
                 else
                     _gravityImpulse = _jumpPower;
@@ -71,7 +79,7 @@ public class Player : MonoBehaviour
         }
         else
         {
-            _gravityImpulse -= _gravity * Time.deltaTime;            
+            _gravityImpulse -= _gravity * Time.deltaTime;
         }
 
         if (Input.GetKeyUp(KeyCode.LeftShift))
@@ -82,5 +90,16 @@ public class Player : MonoBehaviour
 
         _movement.y = _gravityImpulse;
         _player.Move(_movement * Time.deltaTime);
+    }
+
+    public void GrabLedge(Vector3 pos)
+    {
+        _player.enabled = false;
+        _anim.SetBool("LedgeGrabbed", true);
+        transform.position = pos;
+
+        _anim.SetFloat("Speed", 0f);
+        _anim.SetBool("Running", false);
+        _anim.SetBool("Jumping", false);
     }
 }
