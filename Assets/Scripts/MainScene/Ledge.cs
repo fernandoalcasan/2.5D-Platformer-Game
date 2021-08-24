@@ -5,7 +5,7 @@ using UnityEngine;
 public class Ledge : MonoBehaviour
 {
     [SerializeField]
-    private Transform _newPlayerPos;
+    private Transform _ledgeGrabbedPos, _playerStandPos;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -13,7 +13,7 @@ public class Ledge : MonoBehaviour
         {
             if(other.transform.parent.TryGetComponent(out Player player))
             {
-                player.GrabLedge(_newPlayerPos.position);
+                player.GrabLedge(_ledgeGrabbedPos.position, _playerStandPos.position);
             }
         }
     }

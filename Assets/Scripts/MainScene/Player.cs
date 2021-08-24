@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     private Animator _anim;
     private bool _running;
     private bool _jumping;
+    private bool _ledgeGrabbed;
+    private Vector3 _currentStandLedgePos;
 
     void Start()
     {
@@ -33,6 +35,14 @@ public class Player : MonoBehaviour
     void Update()
     {
         CalculateMovement();
+
+        if(_ledgeGrabbed)
+        {
+            if(Input.GetAxisRaw("Horizontal") > 0f)
+            {
+                _anim.SetTrigger("ClimbUp");
+            }
+        }
     }
 
     private void CalculateMovement()
@@ -92,14 +102,23 @@ public class Player : MonoBehaviour
         _player.Move(_movement * Time.deltaTime);
     }
 
-    public void GrabLedge(Vector3 pos)
+    public void GrabLedge(Vector3 ledgePos, Vector3 standPos)
     {
         _player.enabled = false;
         _anim.SetBool("LedgeGrabbed", true);
-        transform.position = pos;
+        _ledgeGrabbed = true;
+        transform.position = ledgePos;
+        _currentStandLedgePos = standPos;
 
         _anim.SetFloat("Speed", 0f);
         _anim.SetBool("Running", false);
         _anim.SetBool("Jumping", false);
+    }
+
+    public void StandFromLedge()
+    {
+        transform.position = _currentStandLedgePos;
+        _anim.SetBool("LedgeGrabbed", false);
+        _player.enabled = true;
     }
 }
