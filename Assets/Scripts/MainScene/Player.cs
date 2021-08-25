@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     private bool _jumping;
     private bool _ledgeGrabbed;
     private Vector3 _currentStandLedgePos;
+    private bool _rolling;
+    private float _rollingSpeed;
 
     void Start()
     {
@@ -69,14 +71,25 @@ public class Player : MonoBehaviour
                 _anim.SetBool("Jumping", false);
             }
 
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) && !_rolling)
             {
                 _movement.x *= 2f;
                 _anim.SetBool("Running", true);
                 _running = true;
             }
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                _anim.SetBool("Roll", true);
+                _rolling = true;
+
+                if (_running)
+                    _rollingSpeed = 2f;
+                else
+                    _rollingSpeed = 1.5f;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space) && !_rolling)
             {
                 if (_running)
                     _gravityImpulse = _jumpPower * 1.25f;
@@ -97,6 +110,9 @@ public class Player : MonoBehaviour
             _anim.SetBool("Running", false);
             _running = false;
         }
+
+        if(_rolling)
+            _movement.x *= _rollingSpeed;
 
         _movement.y = _gravityImpulse;
         _player.Move(_movement * Time.deltaTime);
@@ -120,5 +136,11 @@ public class Player : MonoBehaviour
         transform.position = _currentStandLedgePos;
         _anim.SetBool("LedgeGrabbed", false);
         _player.enabled = true;
+    }
+
+    public void StopRolling()
+    {
+        _anim.SetBool("Roll", false);
+        _rolling = false;
     }
 }
