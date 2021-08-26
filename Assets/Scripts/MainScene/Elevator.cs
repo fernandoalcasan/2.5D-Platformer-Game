@@ -18,6 +18,8 @@ public class Elevator : MonoBehaviour
     [SerializeField]
     private bool _onOrigin;
     private bool _moving;
+    [SerializeField]
+    private float _timeToFloor;
 
     public void CallElevator(bool isOriginPanelCall)
     {
@@ -58,10 +60,10 @@ public class Elevator : MonoBehaviour
         float timePassed = 0f;
         Vector3 currentPos = _onOrigin ? _origin.position : _goal.position;
         
-        while (timePassed < 5f)
+        while (timePassed < _timeToFloor)
         {
             timePassed += Time.deltaTime;
-            transform.position = Vector3.Lerp(currentPos, pos, timePassed / 5f);
+            transform.position = Vector3.Lerp(currentPos, pos, timePassed / _timeToFloor);
             yield return null;
         }
 
