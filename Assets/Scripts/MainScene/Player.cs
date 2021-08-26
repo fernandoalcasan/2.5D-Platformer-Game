@@ -58,9 +58,9 @@ public class Player : MonoBehaviour
 
         if (_direction != 0f)
         {
-            _facing = transform.localEulerAngles;
+            _facing = transform.eulerAngles;
             _facing.y = _direction > 0f ? 0f : 180f;
-            transform.localEulerAngles = _facing;
+            transform.eulerAngles = _facing;
         }
 
         if (_player.isGrounded)
