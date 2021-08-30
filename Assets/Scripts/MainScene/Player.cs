@@ -22,6 +22,13 @@ public class Player : MonoBehaviour
     private Vector3 _currentStandLedgePos;
     private bool _rolling;
     private float _rollingSpeed;
+    private int _power;
+    public int Power { get => _power; }
+
+    private void OnEnable()
+    {
+        Collectable.OnCollection += CollectCoin;
+    }
 
     void Start()
     {
@@ -142,5 +149,15 @@ public class Player : MonoBehaviour
     {
         _anim.SetBool("Roll", false);
         _rolling = false;
+    }
+
+    private void CollectCoin()
+    {
+        _power++;
+    }
+
+    private void OnDisable()
+    {
+        Collectable.OnCollection -= CollectCoin;
     }
 }
