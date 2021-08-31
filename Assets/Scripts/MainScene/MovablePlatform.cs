@@ -10,10 +10,13 @@ public class MovablePlatform : MonoBehaviour
 
     [SerializeField]
     private float _timeToWaypoint;
+    [SerializeField]
+    private float _timeToWaitInWaypoint;
     private float _timePassed;
     private Vector3 _currentPos;
     private Vector3 _destinyPos;
     private bool _arrived;
+    private WaitForSeconds _waypointWait;
 
     private void Start()
     {
@@ -21,6 +24,7 @@ public class MovablePlatform : MonoBehaviour
             Debug.LogError("Please select 2 or more waypoints for the platform to move");
 
         _target = 1;
+        _waypointWait = new WaitForSeconds(_timeToWaitInWaypoint);
         SetNewDestination();
     }
 
@@ -52,7 +56,7 @@ public class MovablePlatform : MonoBehaviour
 
     private IEnumerator MoveToNextWaypoint()
     {
-        yield return new WaitForSeconds(1f);
+        yield return _waypointWait;
         
         _target++;
 
