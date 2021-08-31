@@ -28,9 +28,7 @@ public class Ladder : MonoBehaviour
     private void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
             _inRange = false;
-        }
     }
 
     private void Update()
@@ -38,6 +36,8 @@ public class Ladder : MonoBehaviour
         if(_inRange && Input.GetKeyDown(KeyCode.C))
         {
             _playerRef.GrabLadder(_lowPos.position, _highPos.position);
+            //range set to false because character controller is disabled and ontriggerexit doesn't work as expected
+            _inRange = false;
         }
     }
 }

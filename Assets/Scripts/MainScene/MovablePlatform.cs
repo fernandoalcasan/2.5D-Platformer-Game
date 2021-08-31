@@ -13,6 +13,7 @@ public class MovablePlatform : MonoBehaviour
     private float _timePassed;
     private Vector3 _currentPos;
     private Vector3 _destinyPos;
+    private bool _arrived;
 
     private void Start()
     {
@@ -20,24 +21,39 @@ public class MovablePlatform : MonoBehaviour
             Debug.LogError("Please select 2 or more waypoints for the platform to move");
 
         _target = 1;
-        StartCoroutine(MoveToNextWaypoint());
+        SetNewDestination();
+    }
+
+    private void FixedUpdate()
+    {
+        if(_timePassed < _timeToWaypoint)
+        {
+            _timePassed += Time.deltaTime;
+            transform.position = Vector3.Lerp(_currentPos, _destinyPos, _timePassed / _timeToWaypoint);
+
+            if (_timePassed >= _timeToWaypoint)
+                _arrived = true;
+        }
+        
+
+        if(_arrived)
+        {
+            _arrived = false;
+            StartCoroutine(MoveToNextWaypoint());
+        }
+    }
+
+    private void SetNewDestination()
+    {
+        _currentPos = _waypoints[_target - 1].position;
+        _destinyPos = _waypoints[_target].position;
+        _timePassed = 0f;
     }
 
     private IEnumerator MoveToNextWaypoint()
     {
-        _timePassed = 0f;
-        _currentPos = _waypoints[_target - 1].position;
-        _destinyPos = _waypoints[_target].position;
-
-        while (_timePassed < _timeToWaypoint)
-        {
-            _timePassed += Time.deltaTime;
-            transform.position = Vector3.Lerp(_currentPos, _destinyPos, _timePassed / _timeToWaypoint);
-            yield return null;
-        }
-
         yield return new WaitForSeconds(1f);
-
+        
         _target++;
 
         if (_target == _waypoints.Count)
@@ -46,7 +62,7 @@ public class MovablePlatform : MonoBehaviour
             _target = 1;
         }
 
-        StartCoroutine(MoveToNextWaypoint());
+        SetNewDestination();
     }
 
     private void OnTriggerEnter(Collider other)
