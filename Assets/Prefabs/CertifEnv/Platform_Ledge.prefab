@@ -21313,6 +21313,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 6385571119996091967}
     m_Modifications:
+    - target: {fileID: 1197235194431886096, guid: 443eb5c2425c09f479e3bae27c16baef, type: 3}
+      propertyPath: _isLeft
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1197235194431886123, guid: 443eb5c2425c09f479e3bae27c16baef, type: 3}
       propertyPath: m_Name
       value: Ledge_Checker

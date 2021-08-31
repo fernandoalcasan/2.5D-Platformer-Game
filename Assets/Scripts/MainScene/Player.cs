@@ -20,14 +20,21 @@ public class Player : MonoBehaviour
     private bool _jumping;
     private bool _ledgeGrabbed;
     private Vector3 _currentStandLedgePos;
+    private bool _currentLedgeIsLeft;
     private bool _rolling;
     private float _rollingSpeed;
     private int _power;
     public int Power { get => _power; }
 
+    private bool _onLadder;
+    private float _climbDir;
+    [SerializeField]
+    private float _climbSpeed;
+    private Vector3 _currentStandLadderPos;
+
     private void OnEnable()
     {
-        Collectable.OnCollection += CollectCoin;
+        Collectable.OnCollection += CollectCollectable;
     }
 
     void Start()
@@ -47,10 +54,30 @@ public class Player : MonoBehaviour
 
         if(_ledgeGrabbed)
         {
-            if(Input.GetAxisRaw("Horizontal") > 0f)
+            if(_currentLedgeIsLeft)
             {
-                _anim.SetTrigger("ClimbUp");
+                if (Input.GetAxisRaw("Horizontal") > 0f)
+                    _anim.SetTrigger("ClimbUp");
             }
+            else
+            {
+                if (Input.GetAxisRaw("Horizontal") < 0f)
+                    _anim.SetTrigger("ClimbUp");
+            }
+            
+        }
+        else if(_onLadder)
+        {
+            _climbDir = Input.GetAxisRaw("Vertical");
+            if (_climbDir > 0f)
+            {
+                transform.Translate(Vector3.up * Time.deltaTime * _climbSpeed);
+            }
+            else if (_climbDir < 0f)
+            {
+                transform.Translate(Vector3.down * Time.deltaTime * _climbSpeed);
+            }
+            _anim.SetFloat("ClimbDir", _climbDir);
         }
     }
 
@@ -125,13 +152,14 @@ public class Player : MonoBehaviour
         _player.Move(_movement * Time.deltaTime);
     }
 
-    public void GrabLedge(Vector3 ledgePos, Vector3 standPos)
+    public void GrabLedge(Vector3 ledgePos, Vector3 standPos, bool isLeftLedge)
     {
         _player.enabled = false;
         _anim.SetBool("LedgeGrabbed", true);
         _ledgeGrabbed = true;
         transform.position = ledgePos;
         _currentStandLedgePos = standPos;
+        _currentLedgeIsLeft = isLeftLedge;
 
         _anim.SetFloat("Speed", 0f);
         _anim.SetBool("Running", false);
@@ -151,13 +179,49 @@ public class Player : MonoBehaviour
         _rolling = false;
     }
 
-    private void CollectCoin()
+    private void CollectCollectable()
     {
         _power++;
     }
 
+    public void GrabLadder(Vector3 ladderPos, Vector3 standPos)
+    {
+        transform.position = ladderPos;
+        _currentStandLadderPos = standPos;
+        _onLadder = true;
+        _player.enabled = false;
+
+        _anim.SetTrigger("LadderGrabbed");
+        _anim.SetFloat("Speed", 0f);
+        _anim.SetBool("Running", false);
+        _anim.SetBool("Jumping", false);
+    }
+
+    public void ClimbLadder()
+    {
+        //To avoid changing anim trigger when player is just walking through the stair at the top
+        if(_onLadder)
+        {
+            _onLadder = false;
+            _anim.SetTrigger("ClimbLadder");
+        }
+    }
+
+    public void StandFromLadder()
+    {
+        transform.position = _currentStandLadderPos;
+        _player.enabled = true;
+    }
+
+    public void LeaveLadder()
+    {
+        _onLadder = false;
+        _anim.SetTrigger("LeaveLadder");
+        _player.enabled = true;
+    }
+
     private void OnDisable()
     {
-        Collectable.OnCollection -= CollectCoin;
+        Collectable.OnCollection -= CollectCollectable;
     }
 }
