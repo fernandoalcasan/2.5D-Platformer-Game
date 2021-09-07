@@ -16,7 +16,8 @@ public class Ledge : MonoBehaviour
         {
             if(other.transform.parent.TryGetComponent(out Player player))
             {
-                player.GrabLedge(_ledgeGrabbedPos.position, _playerStandPos.position, _isLeft);
+                player.GrabLedge(_ledgeGrabbedPos.position, _playerStandPos.transform, _isLeft);
+                other.transform.parent.parent = gameObject.transform;
             }
         }
     }

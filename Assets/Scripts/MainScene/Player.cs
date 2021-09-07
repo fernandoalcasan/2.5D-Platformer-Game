@@ -19,7 +19,7 @@ public class Player : MonoBehaviour
     private bool _running;
     private bool _jumping;
     private bool _ledgeGrabbed;
-    private Vector3 _currentStandLedgePos;
+    private Transform _currentStandLedgePos;
     private bool _currentLedgeIsLeft;
     private bool _rolling;
     private float _rollingSpeed;
@@ -71,11 +71,11 @@ public class Player : MonoBehaviour
             _climbDir = Input.GetAxisRaw("Vertical");
             if (_climbDir > 0f)
             {
-                transform.Translate(Vector3.up * Time.deltaTime * _climbSpeed);
+                transform.Translate(_climbSpeed * Time.deltaTime * Vector3.up);
             }
             else if (_climbDir < 0f)
             {
-                transform.Translate(Vector3.down * Time.deltaTime * _climbSpeed);
+                transform.Translate(_climbSpeed * Time.deltaTime * Vector3.down);
             }
             _anim.SetFloat("ClimbDir", _climbDir);
         }
@@ -152,13 +152,13 @@ public class Player : MonoBehaviour
         _player.Move(_movement * Time.deltaTime);
     }
 
-    public void GrabLedge(Vector3 ledgePos, Vector3 standPos, bool isLeftLedge)
+    public void GrabLedge(Vector3 ledgePos, Transform standPosTransform, bool isLeftLedge)
     {
         _player.enabled = false;
         _anim.SetBool("LedgeGrabbed", true);
         _ledgeGrabbed = true;
         transform.position = ledgePos;
-        _currentStandLedgePos = standPos;
+        _currentStandLedgePos = standPosTransform;
         _currentLedgeIsLeft = isLeftLedge;
 
         _anim.SetFloat("Speed", 0f);
@@ -168,9 +168,11 @@ public class Player : MonoBehaviour
 
     public void StandFromLedge()
     {
-        transform.position = _currentStandLedgePos;
+        transform.position = _currentStandLedgePos.position;
         _anim.SetBool("LedgeGrabbed", false);
+        _ledgeGrabbed = false;
         _player.enabled = true;
+        transform.parent = null;
     }
 
     public void StopRolling()
