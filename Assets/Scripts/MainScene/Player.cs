@@ -246,6 +246,7 @@ public class Player : MonoBehaviour
     {
         _player.enabled = false;
         _anim.SetBool("LedgeGrabbed", true);
+        AudioManager.Instance.PlayOneShotFullVolume(_audioClips[6]);
         _ledgeGrabbed = true;
         transform.position = ledgePos;
         _currentStandLedgePos = standPosTransform;
