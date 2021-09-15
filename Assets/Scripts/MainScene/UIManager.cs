@@ -60,7 +60,7 @@ public class UIManager : MonoBehaviour
 
     private void MissionAlert()
     {
-        AudioManager.Instance.PlayOneShotFullVolume(_missionAudio);
+        AudioManager.Instance.PlayOneShotHalfVolume(_missionAudio);
     }
 
     private void MissionDisplayed()
@@ -94,7 +94,7 @@ public class UIManager : MonoBehaviour
             return;
 
         AudioListener.pause = true;
-        AudioManager.Instance.PlayOneShotFullVolume(_pauseAudio);
+        AudioManager.Instance.PlayOneShotHalfVolume(_pauseAudio);
 
         if (!(OnGamePause is null))
             OnGamePause();

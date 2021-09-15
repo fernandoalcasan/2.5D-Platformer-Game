@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     private static int _power;
     public static int Power { get => _power; }
     private int _powerRequired = 20;
-    private static int _lives = 3;
+    private static int _lives;
     public static int Lives { get => _lives; }
     
     //Player movement
@@ -51,6 +51,8 @@ public class Player : MonoBehaviour
     private float _timeBetFlick;
     private WaitForSeconds _wait;
     private bool _landing;
+    private Vector3 _initialColliderPos;
+    private Vector3 _rollingColliderFix;
 
     //Audio
     [SerializeField]
@@ -58,9 +60,15 @@ public class Player : MonoBehaviour
 
     private void OnEnable()
     {
+        _power = 0;
+        _lives = 3;
+
         _player = GetComponent<CharacterController>();
         if (_player is null)
             Debug.LogError("Character Controller is NULL");
+
+        _initialColliderPos = _player.center;
+        _rollingColliderFix = new Vector3(_player.center.x, _player.center.y, 0.5f);
 
         _anim = GetComponent<Animator>();
         if (_anim is null)
@@ -168,7 +176,10 @@ public class Player : MonoBehaviour
             _rolling = true;
 
             if (_running)
+            {
+                _player.center = _rollingColliderFix;
                 _rollingSpeed = 2f;
+            }
             else
                 _rollingSpeed = 1.5f;
         }
@@ -259,6 +270,7 @@ public class Player : MonoBehaviour
     {
         _anim.SetBool("Roll", false);
         _rolling = false;
+        _player.center = _initialColliderPos;
     }
 
     private void CollectCollectable()
@@ -367,8 +379,6 @@ public class Player : MonoBehaviour
 
     private void OnDisable()
     {
-        _power = 0;
-        _lives = 3;
         Collectable.OnCollection -= CollectCollectable;
         DeadZone.OnPlayerFall -= FallDamage;
         UIManager.OnMissionDisplayed -= EnableController;

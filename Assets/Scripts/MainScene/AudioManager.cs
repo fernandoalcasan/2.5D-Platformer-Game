@@ -38,6 +38,10 @@ public class AudioManager : MonoBehaviour
     {
         _sfxAudioSource.PlayOneShot(clip, 1f);
     }
+    public void PlayOneShotHalfVolume(AudioClip clip)
+    {
+        _sfxAudioSource.PlayOneShot(clip, .5f);
+    }
 
     public void PlayMusic(AudioClip clip)
     {

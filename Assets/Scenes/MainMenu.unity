@@ -2607,6 +2607,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Fog
       objectReference: {fileID: 0}
+    - target: {fileID: 8041230981999114579, guid: bac72abb5fa024dea9d65f5e68ada7c3, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bac72abb5fa024dea9d65f5e68ada7c3, type: 3}
 --- !u!1 &342376331
@@ -3900,9 +3904,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: e1855b7bcf69c73429dfb8c2895cc59c, type: 3}
@@ -3916,9 +3920,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: 271b801427cf5a04f9e9724ce0088d63, type: 3}
@@ -5724,9 +5728,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: e1855b7bcf69c73429dfb8c2895cc59c, type: 3}
@@ -5740,9 +5744,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: 271b801427cf5a04f9e9724ce0088d63, type: 3}
@@ -6073,9 +6077,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: e1855b7bcf69c73429dfb8c2895cc59c, type: 3}
@@ -6089,9 +6093,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: 271b801427cf5a04f9e9724ce0088d63, type: 3}
@@ -6727,9 +6731,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: e1855b7bcf69c73429dfb8c2895cc59c, type: 3}
@@ -6743,9 +6747,9 @@ MonoBehaviour:
     callback:
       m_PersistentCalls:
         m_Calls:
-        - m_Target: {fileID: 1728778698}
-          m_TargetAssemblyTypeName: UnityEngine.AudioSource, UnityEngine
-          m_MethodName: PlayOneShot
+        - m_Target: {fileID: 731425339}
+          m_TargetAssemblyTypeName: AudioManager, Assembly-CSharp
+          m_MethodName: PlayOneShotHalfVolume
           m_Mode: 2
           m_Arguments:
             m_ObjectArgument: {fileID: 8300000, guid: 271b801427cf5a04f9e9724ce0088d63, type: 3}
