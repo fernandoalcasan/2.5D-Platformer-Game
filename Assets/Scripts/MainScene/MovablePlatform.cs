@@ -17,6 +17,8 @@ public class MovablePlatform : MonoBehaviour
     private Vector3 _destinyPos;
     private bool _arrived;
     private WaitForSeconds _waypointWait;
+    [SerializeField]
+    private AudioSource _engineAudio;
 
     private void Start()
     {
@@ -43,6 +45,7 @@ public class MovablePlatform : MonoBehaviour
         if(_arrived)
         {
             _arrived = false;
+            _engineAudio.Stop();
             StartCoroutine(MoveToNextWaypoint());
         }
     }
@@ -52,6 +55,7 @@ public class MovablePlatform : MonoBehaviour
         _currentPos = _waypoints[_target - 1].position;
         _destinyPos = _waypoints[_target].position;
         _timePassed = 0f;
+        _engineAudio.Play();
     }
 
     private IEnumerator MoveToNextWaypoint()

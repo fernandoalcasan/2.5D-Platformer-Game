@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6016262172569210460}
   - component: {fileID: 6016262173618474298}
   - component: {fileID: 6016262173618474299}
+  - component: {fileID: 4892231673523722414}
   m_Layer: 0
   m_Name: Collectable_Gas
   m_TagString: Collectable
@@ -108,3 +109,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90322b82be46c6144b4829f73cc150ea, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _audioClip: {fileID: 8300000, guid: 40f0bc8e3d3392543b28fda5432b19fd, type: 3}
+  _volume: 0.65
+--- !u!95 &4892231673523722414
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6016262172571144348}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e8e15c9cbbeca9f4f992cd7b443a2856, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0

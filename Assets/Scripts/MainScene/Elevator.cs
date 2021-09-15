@@ -10,25 +10,30 @@ public class Elevator : MonoBehaviour
     private ElevatorPanel _endPanel;
 
     [SerializeField]
-    private float _speed;
-
-    [SerializeField]
     private Transform _origin, _goal;
 
     [SerializeField]
     private bool _onOrigin;
     private bool _moving;
+    private float _timePassed;
     [SerializeField]
-    private float _timeToFloor;
+    private float _timeToNextFloor;
+    [SerializeField]
+    private AudioSource _engineAudio;
+
+
+    private void Start()
+    {
+        _timePassed = _timeToNextFloor;
+    }
+
 
     public void CallElevator(bool isOriginPanelCall)
     {
         if (!_moving)
         {
-            if(isOriginPanelCall && !_onOrigin)
-                StartCoroutine(MoveElevator(_origin.position, true));
-            else if(!isOriginPanelCall && _onOrigin)
-                StartCoroutine(MoveElevator(_goal.position, false));
+            if ((isOriginPanelCall && !_onOrigin) || (!isOriginPanelCall && _onOrigin))
+                MoveElevator();
         }
     }
 
@@ -36,13 +41,8 @@ public class Elevator : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            if(!_moving)
-            {
-                if (_onOrigin)
-                    StartCoroutine(MoveElevator(_goal.position, false));
-                else
-                    StartCoroutine(MoveElevator(_origin.position, true));
-            }
+            if (!_moving)
+                MoveElevator();
             other.transform.parent = this.transform;
         }
     }
@@ -53,23 +53,31 @@ public class Elevator : MonoBehaviour
             other.transform.parent = null;
     }
 
-    private IEnumerator MoveElevator(Vector3 pos, bool goingOrigin)
+    private void FixedUpdate()
+    {
+        if (_timePassed < _timeToNextFloor)
+        {
+            _timePassed += Time.deltaTime;
+
+            if(_onOrigin)
+                transform.position = Vector3.Lerp(_origin.position, _goal.position, _timePassed / _timeToNextFloor);
+            else
+                transform.position = Vector3.Lerp(_goal.position, _origin.position, _timePassed / _timeToNextFloor);
+
+            if (_timePassed >= _timeToNextFloor)
+            {
+                _onOrigin = !_onOrigin;
+                _moving = false;
+                _oriPanel.ExchangeLights();
+                _endPanel.ExchangeLights();
+            }
+        }
+    }
+
+    private void MoveElevator()
     {
         _moving = true;
-
-        float timePassed = 0f;
-        Vector3 currentPos = _onOrigin ? _origin.position : _goal.position;
-        
-        while (timePassed < _timeToFloor)
-        {
-            timePassed += Time.deltaTime;
-            transform.position = Vector3.Lerp(currentPos, pos, timePassed / _timeToFloor);
-            yield return null;
-        }
-
-        _oriPanel.ExchangeLights();
-        _endPanel.ExchangeLights();
-        _moving = false;
-        _onOrigin = goingOrigin;
+        _engineAudio.Play();
+        _timePassed = 0f;
     }
 }

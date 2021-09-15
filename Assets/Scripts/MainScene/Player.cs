@@ -1,9 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class Player : MonoBehaviour
 {
+    public static Action<bool> OnMissionEnd;
+
+    //Player stats
+    private static int _power;
+    public static int Power { get => _power; }
+    private int _powerRequired = 20;
+    private static int _lives = 3;
+    public static int Lives { get => _lives; }
+    
+    //Player movement
     [SerializeField]
     private float _speed;
     [SerializeField]
@@ -11,41 +22,64 @@ public class Player : MonoBehaviour
     private float _direction;
     [SerializeField]
     private float _gravity;
-    private float _gravityImpulse;
     private Vector3 _movement;
     private Vector3 _facing;
-    private CharacterController _player;
-    private Animator _anim;
-    private bool _running;
-    private bool _jumping;
-    private bool _ledgeGrabbed;
-    private Transform _currentStandLedgePos;
-    private bool _currentLedgeIsLeft;
-    private bool _rolling;
     private float _rollingSpeed;
-    private int _power;
-    public int Power { get => _power; }
-
-    private bool _onLadder;
     private float _climbDir;
     [SerializeField]
     private float _climbSpeed;
+
+    //References
+    private CharacterController _player;
+    private SkinnedMeshRenderer _renderer;
+    private Animator _anim;
+    [SerializeField]
+    private Transform _respawnPos;
+
+    //Help vars
+    private bool _onLadder;
+    private bool _running;
+    private bool _jumping;
+    private bool _ledgeGrabbed;
     private Vector3 _currentStandLadderPos;
+    private Transform _currentStandLedgePos;
+    private bool _currentLedgeIsLeft;
+    private bool _rolling;
+    [SerializeField]
+    private int _timesToFlick;
+    [SerializeField]
+    private float _timeBetFlick;
+    private WaitForSeconds _wait;
+    private bool _landing;
+
+    //Audio
+    [SerializeField]
+    private AudioClip[] _audioClips;
 
     private void OnEnable()
-    {
-        Collectable.OnCollection += CollectCollectable;
-    }
-
-    void Start()
     {
         _player = GetComponent<CharacterController>();
         if (_player is null)
             Debug.LogError("Character Controller is NULL");
-        
-        _anim = GetComponentInChildren<Animator>();
+
+        _anim = GetComponent<Animator>();
         if (_anim is null)
-            Debug.LogError("Animator in children is NULL");
+            Debug.LogError("Animator is NULL");
+
+        _renderer = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (_renderer is null)
+            Debug.LogError("Skinned mesh renderer is NULL");
+
+        _wait = new WaitForSeconds(_timeBetFlick);
+
+        Collectable.OnCollection += CollectCollectable;
+        DeadZone.OnPlayerFall += FallDamage;
+        UIManager.OnMissionDisplayed += EnableController;
+    }
+
+    private void EnableController()
+    {
+        _player.enabled = true;
     }
 
     void Update()
@@ -80,63 +114,42 @@ public class Player : MonoBehaviour
             _anim.SetFloat("ClimbDir", _climbDir);
         }
     }
-
+    
     private void CalculateMovement()
     {
         if (!_player.enabled)
             return;
 
+        HandleMovement();
+        HandleRunning();
+        HandleRolling();
+        _player.Move(_movement * Time.deltaTime);
+
+        HandleGravity();
+        HandleJumping();
+    }
+
+    private void HandleMovement()
+    {
         _direction = Input.GetAxis("Horizontal");
-        _movement = new Vector3(_direction * _speed, 0f, 0f);
+        _movement.x = _direction * _speed;
         _anim.SetFloat("Speed", Mathf.Abs(_direction));
 
         if (_direction != 0f)
         {
             _facing = transform.eulerAngles;
-            _facing.y = _direction > 0f ? 0f : 180f;
+            _facing.y = _direction > 0f ? 90f : -90f;
             transform.eulerAngles = _facing;
         }
+    }
 
-        if (_player.isGrounded)
+    private void HandleRunning()
+    {
+        if (Input.GetKey(KeyCode.LeftShift) && !_rolling && !_jumping)
         {
-            if (_jumping)
-            {
-                _jumping = false;
-                _anim.SetBool("Jumping", false);
-            }
-
-            if (Input.GetKey(KeyCode.LeftShift) && !_rolling)
-            {
-                _movement.x *= 2f;
-                _anim.SetBool("Running", true);
-                _running = true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                _anim.SetBool("Roll", true);
-                _rolling = true;
-
-                if (_running)
-                    _rollingSpeed = 2f;
-                else
-                    _rollingSpeed = 1.5f;
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space) && !_rolling)
-            {
-                if (_running)
-                    _gravityImpulse = _jumpPower * 1.25f;
-                else
-                    _gravityImpulse = _jumpPower;
-
-                _anim.SetBool("Jumping", true);
-                _jumping = true;
-            }
-        }
-        else
-        {
-            _gravityImpulse -= _gravity * Time.deltaTime;
+            _movement.x *= 2f;
+            _anim.SetBool("Running", true);
+            _running = true;
         }
 
         if (Input.GetKeyUp(KeyCode.LeftShift))
@@ -144,12 +157,78 @@ public class Player : MonoBehaviour
             _anim.SetBool("Running", false);
             _running = false;
         }
+    }
+
+    private void HandleRolling()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && _direction != 0f
+            && _player.isGrounded && !_rolling && !_jumping)
+        {
+            _anim.SetBool("Roll", true);
+            _rolling = true;
+
+            if (_running)
+                _rollingSpeed = 2f;
+            else
+                _rollingSpeed = 1.5f;
+        }
 
         if(_rolling)
             _movement.x *= _rollingSpeed;
+    }
 
-        _movement.y = _gravityImpulse;
-        _player.Move(_movement * Time.deltaTime);
+    private void HandleGravity()
+    {
+        if(_player.isGrounded)
+        {
+            if (_landing)
+            {
+                PlayFootStep(3);
+                _landing = false;
+            }
+            _movement.y = -.5f;
+            
+            if (_jumping)
+            {
+                _jumping = false;
+                _anim.SetBool("Jumping", false);
+            }
+        }
+        else
+        {
+            if(_jumping && _movement.y < 0)
+                _movement.y -= _gravity * 2.25f * Time.deltaTime;
+            else
+            {
+                _movement.y -= _gravity * Time.deltaTime;
+                if(!_landing)
+                    _landing = true;
+            }
+        }
+    }
+
+    private void HandleJumping()
+    {
+        if(Input.GetKeyDown(KeyCode.Space) && _player.isGrounded)
+        {
+            if (!_rolling && !_jumping)
+            {
+                if (_running && _movement.x != 0f)
+                    _movement.y = _jumpPower * 1.25f;
+                else
+                    _movement.y = _jumpPower;
+
+                _anim.SetBool("Jumping", true);
+                _jumping = true;
+            }
+        }
+    }
+    
+    private void ResetBools()
+    {
+        _running = false;
+        _jumping = false;
+        _rolling = false;
     }
 
     public void GrabLedge(Vector3 ledgePos, Transform standPosTransform, bool isLeftLedge)
@@ -164,6 +243,7 @@ public class Player : MonoBehaviour
         _anim.SetFloat("Speed", 0f);
         _anim.SetBool("Running", false);
         _anim.SetBool("Jumping", false);
+        ResetBools();
     }
 
     public void StandFromLedge()
@@ -184,6 +264,8 @@ public class Player : MonoBehaviour
     private void CollectCollectable()
     {
         _power++;
+        if (_power == _powerRequired && !(OnMissionEnd is null))
+            OnMissionEnd(true);
     }
 
     public void GrabLadder(Vector3 ladderPos, Vector3 standPos)
@@ -197,6 +279,7 @@ public class Player : MonoBehaviour
         _anim.SetFloat("Speed", 0f);
         _anim.SetBool("Running", false);
         _anim.SetBool("Jumping", false);
+        ResetBools();
     }
 
     public void ClimbLadder()
@@ -222,8 +305,72 @@ public class Player : MonoBehaviour
         _player.enabled = true;
     }
 
+    private void FallDamage()
+    {
+        _lives--;
+
+        if(_lives == 0)
+        {
+            if (!(OnMissionEnd is null))
+                OnMissionEnd(false);
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            _player.enabled = false;
+            transform.position = _respawnPos.position;
+            StartCoroutine(EnableControllerAfterDeath());
+        }
+    }
+
+    private IEnumerator EnableControllerAfterDeath()
+    {
+        _player.enabled = true;
+        for (int i = 0; i < _timesToFlick * 2; i++)
+        {
+            _renderer.enabled = !_renderer.enabled;
+            yield return _wait;
+        }
+        _renderer.enabled = true;
+    }
+
+    private void PlayFootStep(int type)
+    {
+        if (!_player.isGrounded && !_ledgeGrabbed)
+            return;
+
+        switch (type)
+        {
+            case 0: //Walk
+                AudioManager.Instance.PlayOneShot(_audioClips[0], 1f);
+                break;
+            case 1: //Run
+                AudioManager.Instance.PlayOneShot(_audioClips[1], 1f);
+                break;
+            case 2: //Jump
+                AudioManager.Instance.PlayOneShot(_audioClips[2], 1f);
+                break;
+            case 3: //Land
+                AudioManager.Instance.PlayOneShot(_audioClips[3], 1f);
+                break;
+            case 4: //Roll
+                AudioManager.Instance.PlayOneShot(_audioClips[4], 1f);
+                break;
+            case 5: //Ladder step
+                AudioManager.Instance.PlayOneShot(_audioClips[5], 1f);
+                break;
+            default:
+                Debug.LogError("Index out of options");
+                break;
+        }
+    }
+
     private void OnDisable()
     {
+        _power = 0;
+        _lives = 3;
         Collectable.OnCollection -= CollectCollectable;
+        DeadZone.OnPlayerFall -= FallDamage;
+        UIManager.OnMissionDisplayed -= EnableController;
     }
 }
