@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Script to play SFX via animation clip events for the player model on the main menu
 public class Model : MonoBehaviour
 {
     [SerializeField]

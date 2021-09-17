@@ -5,13 +5,14 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System;
 
+//Class to manage the UI
 public class UIManager : MonoBehaviour
 {
+    //Action delegates to indicate when mission has been displayed and game has been paused
     public static Action OnMissionDisplayed;
     public static Action OnGamePause;
 
-    [SerializeField]
-    private AudioClip _missionAudio;
+    [Header("UI refs")]
     [SerializeField]
     private Text _collectablesText;
     [SerializeField]
@@ -19,16 +20,21 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     private Canvas _pauseCanvas;
     [SerializeField]
-    private AudioClip _pauseAudio;
-    [SerializeField]
     private Canvas _resultCanvas;
     [SerializeField]
     private Text _resultText;
+    
+    [Header("UI SFX")]
+    [SerializeField]
+    private AudioClip _missionAudio;
+    [SerializeField]
+    private AudioClip _pauseAudio;
     [SerializeField]
     private AudioClip _successAudio;
     [SerializeField]
     private AudioClip _failAudio;
 
+    //Method to subscribe to the respective action delegates and hide cursor
     private void Start()
     {
         Cursor.visible = false;
@@ -37,6 +43,7 @@ public class UIManager : MonoBehaviour
         Player.OnMissionEnd += DisplayResultMenu;
     }
 
+    //Method to chek for player's input to pause the game
     private void Update()
     {
         if(Input.GetKeyDown(KeyCode.Escape))
@@ -48,27 +55,32 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    //Method to update the collectables UI text
     private void UpdateCollectables()
     {
         _collectablesText.text = Player.Power + "/20";
     }
 
+    //Method to update the lives UI text
     private void UpdateLives()
     {
         _livesTxt.text = Player.Lives + "/3";
     }
 
+    //Method called from UI animation to play SFX of mission
     private void MissionAlert()
     {
         AudioManager.Instance.PlayOneShotHalfVolume(_missionAudio);
     }
 
+    //Method called from UI animation to indicate that mission was displayed
     private void MissionDisplayed()
     {
         if (!(OnMissionDisplayed is null))
             OnMissionDisplayed();
     }
 
+    //Method to display the respective UI when player dies or wins the game
     private void DisplayResultMenu(bool isWin)
     {
         Time.timeScale = 0f;
@@ -88,6 +100,7 @@ public class UIManager : MonoBehaviour
         _resultCanvas.enabled = true;
     }
 
+    //Method to pause the game and handle UI, cursor, time and audio.
     private void PauseGame()
     {
         if (_resultCanvas.enabled)
@@ -104,6 +117,7 @@ public class UIManager : MonoBehaviour
         Cursor.visible = true;
     }
 
+    //Method to resume the game and handle UI, cursor, time and audio.
     public void ResumeGame()
     {
         AudioListener.pause = false;
@@ -112,6 +126,7 @@ public class UIManager : MonoBehaviour
         Cursor.visible = false;
     }
 
+    //Method to restart the game and handle time and audio.
     public void RestartLevel()
     {
         AudioListener.pause = false;
@@ -119,6 +134,7 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    //Method to load main menu and handle time and audio.
     public void GoToMainMenu()
     {
         AudioListener.pause = false;
@@ -126,6 +142,7 @@ public class UIManager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
+    //Unsubscribe from Action delegates as best practice
     private void OnDisable()
     {
         Collectable.OnCollection -= UpdateCollectables;

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Script called after player executes the jump animation to play landing SFX (Method to play this sfx changed btw).
 public class LandingBehavior : StateMachineBehaviour
 {
     [SerializeField]

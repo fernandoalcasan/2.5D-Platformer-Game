@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
+//Class attached to the player
 public class Player : MonoBehaviour
 {
+    //Action delegate to indicate that player dies or wins the game
     public static Action<bool> OnMissionEnd;
 
     //Player stats
@@ -15,26 +17,27 @@ public class Player : MonoBehaviour
     public static int Lives { get => _lives; }
     
     //Player movement
+    [Header("Physics properties")]
     [SerializeField]
     private float _speed;
     [SerializeField]
     private float _jumpPower;
-    private float _direction;
     [SerializeField]
     private float _gravity;
+    [SerializeField]
+    private float _climbSpeed;
+    
+    //Physics help vars
+    private float _direction;
     private Vector3 _movement;
     private Vector3 _facing;
     private float _rollingSpeed;
     private float _climbDir;
-    [SerializeField]
-    private float _climbSpeed;
 
     //References
     private CharacterController _player;
     private SkinnedMeshRenderer _renderer;
     private Animator _anim;
-    [SerializeField]
-    private Transform _respawnPos;
 
     //Help vars
     private bool _onLadder;
@@ -45,19 +48,25 @@ public class Player : MonoBehaviour
     private Transform _currentStandLedgePos;
     private bool _currentLedgeIsLeft;
     private bool _rolling;
+    private bool _landing;
+    private Vector3 _initialColliderPos;
+    private Vector3 _rollingColliderFix;
+
+    //Flicker behavior vars (player respawn)
+    [Header("Respawn properties")]
+    [SerializeField]
+    private Transform _respawnPos;
     [SerializeField]
     private int _timesToFlick;
     [SerializeField]
     private float _timeBetFlick;
     private WaitForSeconds _wait;
-    private bool _landing;
-    private Vector3 _initialColliderPos;
-    private Vector3 _rollingColliderFix;
-
+    
     //Audio
     [SerializeField]
     private AudioClip[] _audioClips;
 
+    //Vars initialization and Action delegates subscription
     private void OnEnable()
     {
         _power = 0;
@@ -85,44 +94,24 @@ public class Player : MonoBehaviour
         UIManager.OnMissionDisplayed += EnableController;
     }
 
+    //Method to enable character controller (used by delegate)
     private void EnableController()
     {
         _player.enabled = true;
     }
 
+    //Method called every frame to handle the player depending on its state
     void Update()
     {
         CalculateMovement();
 
-        if(_ledgeGrabbed)
-        {
-            if(_currentLedgeIsLeft)
-            {
-                if (Input.GetAxisRaw("Horizontal") > 0f)
-                    _anim.SetTrigger("ClimbUp");
-            }
-            else
-            {
-                if (Input.GetAxisRaw("Horizontal") < 0f)
-                    _anim.SetTrigger("ClimbUp");
-            }
-            
-        }
-        else if(_onLadder)
-        {
-            _climbDir = Input.GetAxisRaw("Vertical");
-            if (_climbDir > 0f)
-            {
-                transform.Translate(_climbSpeed * Time.deltaTime * Vector3.up);
-            }
-            else if (_climbDir < 0f)
-            {
-                transform.Translate(_climbSpeed * Time.deltaTime * Vector3.down);
-            }
-            _anim.SetFloat("ClimbDir", _climbDir);
-        }
+        if (_ledgeGrabbed)
+            HandleLedgeInput();
+        else if (_onLadder)
+            HandleLadderInput();
     }
     
+    //Method to handle the actions from the player if character controller is enabled
     private void CalculateMovement()
     {
         if (!_player.enabled)
@@ -132,11 +121,11 @@ public class Player : MonoBehaviour
         HandleRunning();
         HandleRolling();
         _player.Move(_movement * Time.deltaTime);
-
         HandleGravity();
         HandleJumping();
     }
 
+    //Method to calculate and handle the horizontal movement
     private void HandleMovement()
     {
         _direction = Input.GetAxis("Horizontal");
@@ -151,6 +140,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Method to handle movement when player runs
     private void HandleRunning()
     {
         if (Input.GetKey(KeyCode.LeftShift) && !_rolling && !_jumping)
@@ -167,6 +157,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Method to handle movement when player rolls
     private void HandleRolling()
     {
         if (Input.GetKeyDown(KeyCode.E) && _direction != 0f
@@ -188,6 +179,7 @@ public class Player : MonoBehaviour
             _movement.x *= _rollingSpeed;
     }
 
+    //Method to handle gravity using the character controller isGrounded property
     private void HandleGravity()
     {
         if(_player.isGrounded)
@@ -218,6 +210,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Method to handle movement when the player jumps
     private void HandleJumping()
     {
         if(Input.GetKeyDown(KeyCode.Space) && _player.isGrounded)
@@ -234,7 +227,38 @@ public class Player : MonoBehaviour
             }
         }
     }
-    
+
+    //Method to handle input when the player is grabbing a ledge
+    private void HandleLedgeInput()
+    {
+        if (_currentLedgeIsLeft)
+        {
+            if (Input.GetAxisRaw("Horizontal") > 0f)
+                _anim.SetTrigger("ClimbUp");
+        }
+        else
+        {
+            if (Input.GetAxisRaw("Horizontal") < 0f)
+                _anim.SetTrigger("ClimbUp");
+        }
+    }
+
+    //Method to handle input when the player is using a ladder
+    private void HandleLadderInput()
+    {
+        _climbDir = Input.GetAxisRaw("Vertical");
+        if (_climbDir > 0f)
+        {
+            transform.Translate(_climbSpeed * Time.deltaTime * Vector3.up);
+        }
+        else if (_climbDir < 0f)
+        {
+            transform.Translate(_climbSpeed * Time.deltaTime * Vector3.down);
+        }
+        _anim.SetFloat("ClimbDir", _climbDir);
+    }
+
+    //Method to reset the boolean values after some animations are executed
     private void ResetBools()
     {
         _running = false;
@@ -242,6 +266,7 @@ public class Player : MonoBehaviour
         _rolling = false;
     }
 
+    //Method to indicate the player how to grab the respective ledge
     public void GrabLedge(Vector3 ledgePos, Transform standPosTransform, bool isLeftLedge)
     {
         _player.enabled = false;
@@ -258,6 +283,7 @@ public class Player : MonoBehaviour
         ResetBools();
     }
 
+    //Method to change player's position when a ledge has been climbed (due to animation bake)
     public void StandFromLedge()
     {
         transform.position = _currentStandLedgePos.position;
@@ -267,6 +293,7 @@ public class Player : MonoBehaviour
         transform.parent = null;
     }
 
+    //Method to indicate the player that rolling animation has ended
     public void StopRolling()
     {
         _anim.SetBool("Roll", false);
@@ -274,6 +301,7 @@ public class Player : MonoBehaviour
         _player.center = _initialColliderPos;
     }
 
+    //Method to indicate that a collectable has been collected (used by action delegate)
     private void CollectCollectable()
     {
         _power++;
@@ -281,6 +309,7 @@ public class Player : MonoBehaviour
             OnMissionEnd(true);
     }
 
+    //Method to indicate the player how to grab the respective ladder
     public void GrabLadder(Vector3 ladderPos, Vector3 standPos)
     {
         transform.position = ladderPos;
@@ -295,9 +324,9 @@ public class Player : MonoBehaviour
         ResetBools();
     }
 
+    //Method to trigger the climbing animation for the ladder
     public void ClimbLadder()
     {
-        //To avoid changing anim trigger when player is just walking through the stair at the top
         if(_onLadder)
         {
             _onLadder = false;
@@ -305,12 +334,14 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Method to change player's position when climbing animation for the ladder has ended
     public void StandFromLadder()
     {
         transform.position = _currentStandLadderPos;
         _player.enabled = true;
     }
 
+    //Method to leave the ladder and return to previous state
     public void LeaveLadder()
     {
         _onLadder = false;
@@ -318,6 +349,7 @@ public class Player : MonoBehaviour
         _player.enabled = true;
     }
 
+    //Method to receive damage from a fall (used by action delegate)
     private void FallDamage()
     {
         _lives--;
@@ -336,6 +368,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Coroutine to enable player's controller after dying
     private IEnumerator EnableControllerAfterDeath()
     {
         _player.enabled = true;
@@ -347,6 +380,7 @@ public class Player : MonoBehaviour
         _renderer.enabled = true;
     }
 
+    //Method to play footsteps SFX (through animation events)
     private void PlayFootStep(int type)
     {
         if (!_player.isGrounded && !_ledgeGrabbed)
@@ -378,6 +412,7 @@ public class Player : MonoBehaviour
         }
     }
 
+    //Unsubscribe from action delegates as best practice
     private void OnDisable()
     {
         Collectable.OnCollection -= CollectCollectable;

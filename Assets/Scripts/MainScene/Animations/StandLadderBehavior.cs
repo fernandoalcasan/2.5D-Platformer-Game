@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Script called after player executes the climb up animation (Ladder) to change position due to animation baking.
 public class StandLadderBehavior : StateMachineBehaviour
 {
-    // OnStateExit is called when a transition ends and the state machine finishes evaluating this state
     override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
         if (animator.TryGetComponent(out Player player))

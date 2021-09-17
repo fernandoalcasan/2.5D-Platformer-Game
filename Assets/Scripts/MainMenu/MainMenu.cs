@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+//Script to handle the main menu mechanics (UI, lighting, model animations)
 public class MainMenu : MonoBehaviour
 {
     [Header("Lights on Scene")]
@@ -13,11 +14,13 @@ public class MainMenu : MonoBehaviour
     private Renderer _lightsRenderer;
     private Color _lightsEmissionColor;
 
+    //Time to wait before executing start or exit from game
     [SerializeField]
     private float _timeAfterBtnPressed;
     [SerializeField]
     private int _timesLightChange;
     private WaitForSeconds _wait;
+    private AsyncOperation _asyncLoad;
     
     [Header("Humanoid Animator")]
     [SerializeField]
@@ -28,9 +31,7 @@ public class MainMenu : MonoBehaviour
     private Canvas _creditsCanvas;
     private CanvasScaler _creditsScaler;
 
-    private AsyncOperation _asyncLoad;
-
-
+    //Initialize variables
     private void Awake()
     {
         _wait = new WaitForSeconds(_timeAfterBtnPressed / _timesLightChange);
@@ -55,28 +56,33 @@ public class MainMenu : MonoBehaviour
         _lightsEmissionColor = _lightsRenderer.sharedMaterial.GetColor("_EmissionColor");
     }
 
+    //Method called from UI to start the game using a coroutine
     public void StartGame()
     {
         StartCoroutine(StartOrExitCoroutine(true));
     }
 
+    //Method called from UI to exit the game using a coroutine
     public void ExitGame()
     {
         StartCoroutine(StartOrExitCoroutine(false));
     }
 
+    //Method called from UI to display the credits canvas
     public void DisplayCredits()
     {
         _creditsCanvas.enabled = true;
         _creditsScaler.enabled = true;
     }
 
+    //Method called from UI to hide the credits canvas
     public void CloseCredits()
     {
         _creditsCanvas.enabled = false;
         _creditsScaler.enabled = false;
     }
 
+    //Coroutine to change lighting, execute animation, load game scene async and exit game
     private IEnumerator StartOrExitCoroutine(bool isStart)
     {
         if (isStart)
@@ -115,6 +121,7 @@ public class MainMenu : MonoBehaviour
         }
     }
 
+    //Method to change the color and material from the lights
     private void ChangeLightsColor(Color color)
     {
         _lightsRenderer.sharedMaterial.SetColor("_EmissionColor", color);
@@ -123,7 +130,8 @@ public class MainMenu : MonoBehaviour
             _lights[i].color = color;
         }
     }
-    
+
+    //Method to reset the color and material from the lights
     private void ReturnLightsColor()
     {
         _lightsRenderer.sharedMaterial.SetColor("_EmissionColor", _lightsEmissionColor);
